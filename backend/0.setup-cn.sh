@@ -3,20 +3,22 @@
 MIRROR_LINE="-i https://pypi.tuna.tsinghua.edu.cn/simple"
 
 # 处理 backend/requirements.txt
-BACKEND_REQ="/home/ubuntu/llm_model_hub/backend/requirements.txt"
+BACKEND_REQ="./requirements.txt"
 if [ -f "$BACKEND_REQ" ]; then
-    sed -i "1i$MIRROR_LINE" "$BACKEND_REQ"
+    sed -i '' "1i\\
+$MIRROR_LINE" "$BACKEND_REQ"
     echo "Added mirror line to $BACKEND_REQ"
 else
     echo "File $BACKEND_REQ not found"
 fi
 
 # 处理 backend/byoc/requirements.txt
-BACKEND2_REQ="/home/ubuntu/llm_model_hub/backend/byoc/requirements.txt"
+BACKEND2_REQ="./byoc/requirements.txt"
 if [ -f "$BACKEND2_REQ" ]; then
-    sed -i "1i$MIRROR_LINE" "$BACKEND2_REQ"
+    sed -i '' "1i\\
+$MIRROR_LINE" "$BACKEND2_REQ"
     echo "Added mirror line to $BACKEND2_REQ"
-    sed -i 's|https://github.com/|https://gitclone.com/github.com/|' "$BACKEND2_REQ"
+    sed -i '' 's|https://github.com/|https://gitclone.com/github.com/|' "$BACKEND2_REQ"
 else
     echo "File $BACKEND2_REQ not found"
 fi
@@ -24,17 +26,18 @@ fi
 
 
 # 处理 backend/LLaMA-Factory/requirements.txt
-LLAMA_REQ="/home/ubuntu/llm_model_hub/backend/LLaMA-Factory/requirements.txt"
+LLAMA_REQ="./LLaMA-Factory/requirements.txt"
 if [ -f "$LLAMA_REQ" ]; then
-    sed -i "1i$MIRROR_LINE" "$LLAMA_REQ"
-    sed -i 's|https://github.com/|https://gitclone.com/github.com/|' "$LLAMA_REQ"
+    sed -i '' "1i\\
+$MIRROR_LINE" "$LLAMA_REQ"
+    sed -i '' 's|https://github.com/|https://gitclone.com/github.com/|' "$LLAMA_REQ"
     echo "Modified $LLAMA_REQ"
 else
     echo "File $LLAMA_REQ not found"
 fi
 
 # 处理 .gitmodules
-# gitmoddules_REQ="/home/ubuntu/llm_model_hub/.gitmodules"
+# gitmoddules_REQ="./.gitmodules"
 # if [ -f "$gitmoddules_REQ" ]; then
 #     sed -i "1i$MIRROR_LINE" "$gitmoddules_REQ"
 #     sed -i 's|https://github.com/|https://gitclone.com/github.com/|' "$gitmoddules_REQ"
@@ -47,9 +50,9 @@ fi
 DOCKER_CONFIG="/etc/docker/daemon.json"
 sudo mkdir -p /etc/docker
 sudo tee "$DOCKER_CONFIG" > /dev/null <<EOT
-{ 
-  "registry-mirrors" : 
-    [ 
+{
+  "registry-mirrors" :
+    [
         "https://docker.registry.cyou",
         "https://docker-cf.registry.cyou",
         "https://dockerpull.com",
@@ -63,7 +66,7 @@ sudo tee "$DOCKER_CONFIG" > /dev/null <<EOT
         "https://dhub.kubesre.xyz",
         "https://docker.hlyun.org",
         "https://docker.m.daocloud.io"
-    ] 
+    ]
 }
 EOT
 echo "Docker configuration added to $DOCKER_CONFIG"

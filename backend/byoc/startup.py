@@ -19,7 +19,7 @@ def init():
     print(f"S3 Code or Model tar ball uploaded to --- > {model_artifact}")
     
     #write code_artifact to .env file 
-    with open("/home/ubuntu/llm_model_hub/backend/.env", "a") as f:
+    with open("../.env", "a") as f:
         f.write(f"model_artifact={model_artifact}")
 
 if __name__ == "__main__":

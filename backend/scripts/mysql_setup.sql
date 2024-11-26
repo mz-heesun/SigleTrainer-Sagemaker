@@ -39,3 +39,6 @@ CREATE TABLE IF NOT EXISTS USER_TABLE (
     extra_config TEXT
 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+INSERT INTO llm.USER_TABLE (id, username, userpwd, groupname, extra_config) VALUES (1, 'demo_user', 'demo_user', null, null);
