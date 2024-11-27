@@ -38,7 +38,7 @@ export const S3Selector = ({outputPath,objectsIsItemDisabled,setOutputPath}) => 
     const onFetchObjects = async (bucketName, pathPrefix) => {
         // console.log(`bucketName:${bucketName},pathPrefix:${pathPrefix}`)
         try{
-            const resp = await remotePost({"output_s3_path":bucketName+pathPrefix}, 'list_s3_path');
+            const resp = await remotePost({"output_s3_path":bucketName+"/"+pathPrefix}, 'list_s3_path');
             const objects = await resp.objects;
             // console.log('objects:',objects);
             return Promise.resolve(objects)
