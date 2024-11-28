@@ -33,7 +33,7 @@ export const navItems: SideNavigationProps['items'] = [
     items: [
       { type: 'link', external: true, 
       info: <Badge color="green">必读</Badge>,
-      text: '使用说明', href: 'https://amzn-chn.feishu.cn/docx/QniUdr7FroxShfxeoPacLJKtnXf' },
+      text: '사용 지침', href: 'https://amzn-chn.feishu.cn/docx/QniUdr7FroxShfxeoPacLJKtnXf' },
     ],
   }, 
 ];

@@ -212,7 +212,8 @@ const InputCustRepo = ({ data, setData, readOnly }: SelectQuantTypeProps) => {
   return (
     <SpaceBetween size='xs'>
       <FormField
-        description="海外区输入HuggingFace Repo地址,例如:unsloth/llama-3-8b-Instruct，中国区请输入魔搭社区地址,例如:baicai003/Llama3-Chinese_v2"
+        description="해외 지역에서는 HuggingFace Repo 주소를 입력하세요. 예: unsloth/llama-3-8b-Instruct.
+        중국에서는 Magic Community 주소를 입력하세요. 예: baicai003/Llama3-China_v2"
         stretch={true}
       >
         <Input
@@ -237,11 +238,11 @@ const InputS3Path = ({ data, setData, readOnly }: SelectQuantTypeProps) => {
         description="输入S3存储路径，例如：s3://bucket/model/"
         stretch={true}
       >
-        <S3Selector 
+        <S3Selector
                 objectsIsItemDisabled={(item:any) => !item.IsFolder}
                 setOutputPath={(value:any)=>
                    setData((pre: any) => ({ ...pre,  extra_params:{...pre.extra_params,s3_model_path: value } }))
-                  } 
+                  }
               outputPath={value}/>
       </FormField>
     </SpaceBetween>
@@ -489,20 +490,20 @@ export const DeployModelModal = ({
         <FormField
           label="Model Name"
           stretch={false}
-          description="select a supported Model"
+          description="지원되는 모델을 선택하세요"
           i18nStrings={{ errorIconAriaLabel: 'Error' }}
         >
           <SelectModelName data={data} setData={setData} readOnly={modelNameReadOnly} />
         </FormField>
 
         <FormField
-          label="自定义模型仓库"
+          label="맞춤형 모델 창고"
           stretch={false}
         >
           <InputCustRepo data={data} setData={setData} readOnly={modelNameReadOnly} />
         </FormField>
         <FormField
-          label="自定义模型S3Path"
+          label="맞춤 모델 S3 Path"
           stretch={false}
         >
           <InputS3Path data={data} setData={setData} readOnly={modelNameReadOnly} />
@@ -511,7 +512,7 @@ export const DeployModelModal = ({
         <FormField
           label="Instance Type"
           // description="Select a Instance type to deploy the model."
-          description={<Link href={`${instanceCalculator}`} external>使用机型计算器估算</Link>}
+          description={<Link href={`${instanceCalculator}`} external>모델 계산기를 사용하여 추정</Link>}
 
           stretch={false}
           errorText={errors.instance_type}
@@ -534,13 +535,13 @@ export const DeployModelModal = ({
           label="Engine Type"
           stretch={false}
           errorText={errors.engine}
-          description={<Link href='https://docs.djl.ai/docs/serving/serving/docs/lmi/user_guides/vllm_user_guide.html' external>各类引擎支持模型信息</Link>}
+          description={<Link href='https://docs.djl.ai/docs/serving/serving/docs/lmi/user_guides/vllm_user_guide.html' external>다양한 엔진이 모델 정보를 지원합니다.</Link>}
           i18nStrings={{ errorIconAriaLabel: 'Error' }}
         >
           <SetEngineType data={data} setData={setData} readOnly={false} />
         </FormField>
 
-        {data.engine == 'vllm' && 
+        {data.engine == 'vllm' &&
           <SetExtraParamsInput data={data} setData={setData} readOnly={false} />}
 
         {/* {data.engine !== 'auto' && <FormField

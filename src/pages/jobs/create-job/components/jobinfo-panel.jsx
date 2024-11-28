@@ -42,7 +42,7 @@ function AdvancedConfigs({onChange, readOnly, data, setData}) {
                 >
                     <FormField
                         label="Warmup steps"
-                        description="Number of steps used for warmup."
+                        description="워밍업에 사용되는 단계 수입니다."
                         stretch={false}
                     >
                         <Input readOnly={readOnly}
@@ -52,7 +52,7 @@ function AdvancedConfigs({onChange, readOnly, data, setData}) {
                     </FormField>
                     <FormField
                         label="Logging steps"
-                        description="Number of steps between two logs."
+                        description="두 로그 사이의 단계 수입니다."
                         stretch={false}
                     >
                         <Input readOnly={readOnly}
@@ -66,7 +66,7 @@ function AdvancedConfigs({onChange, readOnly, data, setData}) {
                 >
                     <FormField
                         label="Save steps"
-                        description="Number of steps between two checkpoints."
+                        description="두 체크포인트 사이의 단계 수입니다."
                         stretch={false}
                     >
                         <Input readOnly={readOnly}
@@ -76,7 +76,7 @@ function AdvancedConfigs({onChange, readOnly, data, setData}) {
                     </FormField>
                     <FormField
                         label="Optimizer"
-                        description="The optimizer to use."
+                        description="사용할 최적화 프로그램입니다."
                         stretch={false}
                     >
                         <SelectOptimizer readOnly={readOnly} data={data} setData={setData}/>
@@ -90,7 +90,7 @@ function AdvancedConfigs({onChange, readOnly, data, setData}) {
                 >
                     <FormField
                         label="LoRA rank"
-                        description="The rank of LoRA matrices."
+                        description="LoRA 매트릭스의 순위입니다."
                         stretch={false}
                     >
                         <Input readOnly={readOnly}
@@ -100,7 +100,7 @@ function AdvancedConfigs({onChange, readOnly, data, setData}) {
                     </FormField>
                     <FormField
                         label="LoRA alpha"
-                        description="Lora scaling coefficient."
+                        description="Lora 스케일링 계수."
                         stretch={false}
                     >
                         <Input readOnly={readOnly}
@@ -114,7 +114,7 @@ function AdvancedConfigs({onChange, readOnly, data, setData}) {
                 >
                     <FormField
                         label="LoRA Target Modules"
-                        description="Lora target modules such as v_proj,k_proj, default is all, which apply to all linear layers"
+                        description="v_proj,k_proj와 같은 Lora 대상 모듈, 기본값은 all이며 모든 선형 레이어에 적용됩니다."
                         stretch={false}
                     >
                         <Input readOnly={readOnly}
