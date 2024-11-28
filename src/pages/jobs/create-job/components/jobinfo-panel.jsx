@@ -462,6 +462,17 @@ const SelectBooster = ({data, setData, readOnly, refs}) => {
 }
 
 
+const formatS3Path = (path) => {
+    if (!path.startsWith('s3://')) {
+        path = 's3://' + path;
+    }
+    if (!path.endsWith('/')) {
+        path += '/';
+    }
+    return path;
+};
+
+
 export default function DistributionPanel({
                                               loadHelpPanelContent,
                                               validation = false,
@@ -529,7 +540,7 @@ export default function DistributionPanel({
                 <SpaceBetween size="l">
                     <FormField
                         label="Job Name"
-                        description="Give a name to your job."
+                        description="직업에 이름을 지어주세요."
                         stretch={false}
                         errorText={errors.job_name}
                         i18nStrings={{errorIconAriaLabel: 'Error'}}
@@ -537,7 +548,7 @@ export default function DistributionPanel({
                         <Input readOnly={readOnly}
                                value={data.job_name}
                                onChange={({detail: {value}}) => onChange('job_name', value)}
-                               placeholder="Give a name to your job"
+                               placeholder="직업에 이름을 지어주세요"
                                ref={refs.job_name}
                                onBlur={() => onBlur('job_name')}
                         />
@@ -555,7 +566,8 @@ export default function DistributionPanel({
                     <FormField
                         label="Model Name"
                         stretch={false}
-                        description="选择模型名称"
+                        // description="选择模型名称"
+                        description="모델명 선택"
                         errorText={errors.model_name}
                         i18nStrings={{errorIconAriaLabel: 'Error'}}
                     >
@@ -564,7 +576,8 @@ export default function DistributionPanel({
                     <FormField
                         label="Use Existing Model Weight (Optional)"
                         stretch={false}
-                        description="使用已有的模型文件进行训练"
+                        // description="使用已有的模型文件进行训练"
+                        description="학습을 위해 기존 모델 파일 사용"
                         errorText={errors.s3_model_path}
                         i18nStrings={{errorIconAriaLabel: 'Error'}}
                     >
@@ -577,7 +590,7 @@ export default function DistributionPanel({
                     <FormField
                         label="Use Existing Checkpoint (Optional)"
                         stretch={false}
-                        description="使用已有的checkpoint文件继续训练（⚠️：如果是Lora训练，选择Lora模型checkpoint）"
+                        description="기존 체크포인트 파일을 활용하여 학습을 이어갑니다. (⚠️: Lora 학습이라면 Lora 모델 체크포인트를 선택하세요)"
                         errorText={errors.s3_checkpoint}
                         i18nStrings={{errorIconAriaLabel: 'Error'}}
                     >
@@ -590,7 +603,7 @@ export default function DistributionPanel({
 
                     <FormField
                         label="Prompte Template"
-                        description="select a Prompt Template to format the dataset"
+                        description="데이터 세트의 형식을 지정하려면 프롬프트 템플릿을 선택하세요."
                         stretch={false}
                         errorText={errors.prompt_template}
                         i18nStrings={{errorIconAriaLabel: 'Error'}}
@@ -599,7 +612,7 @@ export default function DistributionPanel({
                     </FormField>
                     <FormField
                         label="Finetuning method"
-                        description="Choose Finetuning method for the job"
+                        description="작업에 대한 미세 조정 방법을 선택하십시오."
                         stretch={true}
                     >
                         <RadioGroup
@@ -654,20 +667,21 @@ export default function DistributionPanel({
                     <FormField
                         label="Training Data in S3"
                         stretch={false}
-                        description="Input the S3 path of your own dataset"
+                        description="자신의 데이터세트의 S3 경로를 입력하세요."
                         errorText={errors.s3DataPath}
                         i18nStrings={{errorIconAriaLabel: 'Error'}}
                     >
                         <S3Selector label={"S3 Data Path"}
                                     readOnly={readOnly}
                                     objectsIsItemDisabled={(item) => !item.IsFolder}
-                                    setOutputPath={(value) => setData({s3DataPath: value})}
+                                    setOutputPath={(value) => setData({s3DataPath: formatS3Path(value)})}
                                     outputPath={readOnly ? data.job_payload?.s3_data_path : data.s3DataPath}/>
                     </FormField>
-                    {(data.job_payload?.s3_data_path || data.s3DataPath) &&
+                    {data.job_payload?.s3_data_path}
+                    {(data.job_payload?.s3_data_path || data.s3DataPath) && (data.job_payload?.s3_data_path.trim() !== '' || data.s3DataPath.trim() !== '') &&
                         <FormField
                             label="Dataset Info"
-                            description="Need to prepare a data set info in Json format. For example"
+                            description="Json 형식의 데이터 세트 정보를 준비해야 합니다. 예를 들어"
                             stretch={false}
                         >
                             <JsonEditor
@@ -675,12 +689,13 @@ export default function DistributionPanel({
                                 value={readOnly ? data.job_payload?.dataset_info : data.datasetInfo}
                                 onDelayedChange={(event) => onChange('datasetInfo', event.detail.value)}
                             />
-                        </FormField>}
+                        </FormField>
+                    }
 
                     <FormField
                         label={t("public_datasets")}
                         stretch={false}
-                        description="select open-source datasets from hf"
+                        description="hf에서 오픈 소스 데이터세트를 선택하세요."
                         errorText={errors.dataset}
                         i18nStrings={{errorIconAriaLabel: 'Error'}}
                     >
@@ -690,7 +705,7 @@ export default function DistributionPanel({
                     ]}>
                         <FormField
                             label="Max samples"
-                            description="Maximum samples per dataset."
+                            description="데이터 세트당 최대 샘플입니다."
                             stretch={false}
                         >
                             <Input readOnly={readOnly}
@@ -700,7 +715,7 @@ export default function DistributionPanel({
                         </FormField>
                         <FormField
                             label="Cutoff length"
-                            description="Max tokens in input sequence."
+                            description="입력 순서의 최대 토큰."
                             stretch={false}
                         >
                             <Input readOnly={readOnly}
@@ -712,7 +727,7 @@ export default function DistributionPanel({
                     <Grid gridDefinition={[{colspan: {"default": 4, xxs: 4}}]}>
                         <FormField
                             label="Val size"
-                            description="Proportion of data in the dev set."
+                            description="개발 세트의 데이터 비율."
                             stretch={false}
                         >
                             <Input readOnly={readOnly}
@@ -730,7 +745,7 @@ export default function DistributionPanel({
                 <SpaceBetween size="l">
                     <FormField
                         label="Instances Type"
-                        description="Selecte a instance type for training."
+                        description="훈련할 인스턴스 유형을 선택합니다."
                         stretch={false}
                         errorText={errors.instance_type}
                         i18nStrings={{errorIconAriaLabel: 'Error'}}
@@ -739,7 +754,7 @@ export default function DistributionPanel({
                     </FormField>
                     <FormField
                         label="Instances amount"
-                        description="Set the instance amount"
+                        description="인스턴스 양 설정"
                         stretch={false}
                         errorText={errors.instance_num}
                         i18nStrings={{errorIconAriaLabel: 'Error'}}
@@ -782,7 +797,7 @@ export default function DistributionPanel({
                     <Grid gridDefinition={[{colspan: {"default": 6, xxs: 4}}, {colspan: {"default": 6, xxs: 4}}]}>
                         <FormField
                             label="Learning rate"
-                            description="Initial learning rate for AdamW."
+                            description="AdamW의 초기 학습 속도."
                             stretch={false}
                         >
                             <Input readOnly={readOnly}
@@ -792,7 +807,7 @@ export default function DistributionPanel({
                         </FormField>
                         <FormField
                             label="Epoch"
-                            description="Total number of training epochs to perform."
+                            description="수행할 총 학습 에포크 수입니다."
                             stretch={false}
                         >
                             <Input readOnly={readOnly}
@@ -804,7 +819,7 @@ export default function DistributionPanel({
                     <Grid gridDefinition={[{colspan: {"default": 6, xxs: 4}}, {colspan: {"default": 6, xxs: 4}}]}>
                         <FormField
                             label="Batch size per device"
-                            description="Number of samples processed on each GPU."
+                            description="각 GPU에서 처리된 샘플 수입니다."
                             stretch={false}
                         >
                             <Input readOnly={readOnly}
@@ -814,7 +829,7 @@ export default function DistributionPanel({
                         </FormField>
                         <FormField
                             label="Gradient accumulation"
-                            description="Number of steps for gradient accumulation."
+                            description="경사 누적 단계 수입니다."
                             stretch={false}
                         >
                             <Input readOnly={readOnly}
@@ -826,7 +841,7 @@ export default function DistributionPanel({
                     <Grid gridDefinition={[{colspan: {"default": 6, xxs: 4}}, {colspan: {"default": 6, xxs: 4}}]}>
                         <FormField
                             label="Training precision"
-                            description="Whether to use mixed precision training."
+                            description="혼합 정밀도 훈련을 사용할지 여부입니다."
                             stretch={false}
                         >
                             <SelectTrainingPrecision data={data} readOnly={readOnly} setData={setData}/>
