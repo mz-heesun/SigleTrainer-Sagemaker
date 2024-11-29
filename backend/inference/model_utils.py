@@ -111,7 +111,8 @@ def load_tokenizer_hf(model_args):
             padding_side="right",
             **init_kwargs,
         )
-    except Exception:
+    except Exception as e:
+        print(e)
         logger.warning("Fail to load tokenizer from huggingface")
         tokenizer = None
 
@@ -130,7 +131,8 @@ def load_tokenizer_hf(model_args):
     else:
         try:
             processor = AutoProcessor.from_pretrained(model_args['model_name_or_path'], **init_kwargs)
-        except Exception:
+        except Exception as e:
+            print(e)
             processor = None
         print("--processor:")
         print(processor)

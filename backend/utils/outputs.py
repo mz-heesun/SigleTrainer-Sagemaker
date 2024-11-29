@@ -5,15 +5,16 @@ import re
 import dotenv
 import os
 from .config import boto_sess
+
 dotenv.load_dotenv()
 
-def list_s3_objects(s3_url:str):
 
+def list_s3_objects(s3_url: str):
     # Parse the S3 URL
     match = re.match(r's3://([^/]+)/?(.*)$', s3_url)
     if not match:
         raise ValueError("Invalid S3 URL format")
-    
+
     bucket_name = match.group(1)
     prefix = match.group(2)
 
@@ -34,29 +35,31 @@ def list_s3_objects(s3_url:str):
             for common_prefix in page.get('CommonPrefixes', []):
                 folder_name = common_prefix['Prefix'].rstrip('/').split('/')[-1].replace('s3://', '')
                 result.append({
-                    "Key": folder_name+'/',
+                    "Key": folder_name + '/',
                     "IsFolder": True
                 })
-            
+
             # Handle files
             for obj in page.get('Contents', []):
                 # Skip the prefix itself if it's returned as an object
                 if obj['Key'] == prefix:
                     continue
-                
+
                 file_name = obj['Key'].split('/')[-1].replace('s3://', '')
                 result.append({
                     "Key": file_name,
-                    "LastModified": obj['LastModified'].astimezone(tz_offset).strftime("%B %d, %Y, %H:%M:%S (UTC+08:00)"),
+                    "LastModified": obj['LastModified'].astimezone(tz_offset).strftime(
+                        "%B %d, %Y, %H:%M:%S (UTC+08:00)"),
                     "Size": obj['Size'],
                     "IsFolder": False
                 })
-    
+
     except ClientError as e:
         print(f"An error occurred: {e}")
         return []
 
     return result
+
 
 if __name__ == '__main__':
     path = 's3://sagemaker-us-west-2-434444145045/Meta-Llama-3-8B-Instruct/'

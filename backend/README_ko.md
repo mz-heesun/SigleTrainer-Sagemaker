@@ -57,6 +57,18 @@ docker exec hub-mysql sh -c "mysql -u root -p1234560 -D llm  < /opt/data/mysql_s
 pip install -r requirements.txt
 ```
 
+```shell
+bash build_and_push.sh 
+```
+백엔드 API 서버 실행
+```shell
+python server.py --host 0.0.0.0 --port 8000
+```
+
+```shell
+python3 processing_engine/main.py
+```
+
 각 폴더별 설명
 byoc - inference 배포 스크립트 \
 db-management - 로컬 데이테이스 \
