@@ -120,22 +120,22 @@ def get_predictor(endpoint_name: str, params: Dict[str, Any], model_args: Dict[s
 def inference_byoc(endpoint_name: str, model_name: str, messages: List[Dict[str, Any]], params: Dict[str, Any],
                    stream=False):
     """
-    모델 이름과 엔드포인트 이름이 지정된 메시지에 대해 추론을 수행합니다.
-    
+    根据给定的模型名称和端点名称，对消息进行推理。
+
     参数:
-    endpoint_name (str): 모델 서비스의 엔드포인트 이름입니다.
-    model_name (str): 모델의 이름입니다.
-    messages (List[Dict[str,Any]]): 추론이 필요한 메시지 목록입니다.
+    endpoint_name (str): 模型服务的端点名称。
+    model_name (str): 模型的名称。
+    messages (List[Dict[str,Any]]): 需要进行推理的消息列表。
                 messages = [
-                {"role": "system", "content":"항상 중국어로 답변해주세요"},
-                {"role": "user", "content": "누구세요? 당신은 무엇을 합니까"},
+                {"role": "system", "content":"请始终用中文回答"},
+                {"role": "user", "content": "你是谁？你是干嘛的"},
             ]
-    params (Dict[str,Any]): 예측기에 전달된 추가 매개변수。
-    stream (bool): 스트리밍 추론을 사용할지 여부를 지정하며 기본값은 False입니다.
-    
+    params (Dict[str,Any]): 传递给预测器的额外参数。
+    stream (bool): 指定是否使用流式推理，默认为False。
+
     返回:
-    如果stream为False，추론 결과 목록을 반환합니다.。
-    如果stream为True，스트리밍 추론의 출력을 처리하는 함수를 반환합니다.。
+    如果stream为False，返回推理的结果列表。
+    如果stream为True，返回处理流式推理输出的函数。
     """
     repo_type = DownloadSource.MODELSCOPE if DEFAULT_REGION.startswith('cn') else DownloadSource.DEFAULT
     # 统一处理成repo/modelname格式
@@ -148,38 +148,28 @@ def inference_byoc(endpoint_name: str, model_name: str, messages: List[Dict[str,
                   "token": os.environ['HUGGING_FACE_HUB_TOKEN']}
 
     predictor, tokenizer = get_predictor(endpoint_name, params={}, model_args=model_args)
-    print(f"tokenizer:{tokenizer}")
     if tokenizer:
-        tokenizer.chat_template = params.get('chat_template')
         has_chat_template = hasattr(tokenizer, 'chat_template') and tokenizer.chat_template is not None
         print(f"has_chat_template:{has_chat_template}")
         logger.info(f"has_chat_template:{has_chat_template}")
     else:
         has_chat_template = None
         logger.info(f"tokenizer is None")
-
-    inputs = tokenizer.apply_chat_template(
-        messages,
-        tokenize=False,
-        add_generation_prompt=False
-    )
-
-    print(f"inputs::{inputs}")
-
     # try:
     #     inputs = tokenizer.apply_chat_template(
-    #         messages,
-    #         tokenize=False,
-    #         add_generation_prompt=True
-    #     )
+    #                 messages,
+    #                 tokenize=False,
+    #                 add_generation_prompt=True
+    #             )
     # except ValueError as e:
     #     logger.error(e)
     #     inputs = apply_default_chat_template(
-    #         messages,
-    #         tokenize=True,
-    #         add_generation_prompt=True
+    #                 messages,
+    #                 tokenize=True,
+    #                 add_generation_prompt=True
     #             )
 
+    print(f"params:{params}")
     payload = {
         "model": model_name,
         "messages": messages,
@@ -188,13 +178,11 @@ def inference_byoc(endpoint_name: str, model_name: str, messages: List[Dict[str,
         "temperature": params.get('temperature', 0.1),
         "top_p": params.get('top_p', 0.9),
     }
-    payload['chat_template'] = inputs
-    # 템플릿이 없으면 맞춤 템플릿을 사용하세요.
+    # 如果没有模板，则使用自定义模板
     if not has_chat_template and params.get('chat_template'):
         payload['chat_template'] = params['chat_template']
         logger.info(f"use chat_template:{params['chat_template']}")
 
-    print(f"payload:{payload}")
     if not stream:
         try:
             response = predictor.predict(payload)
@@ -218,8 +206,8 @@ def inference_byoc(endpoint_name: str, model_name: str, messages: List[Dict[str,
 def inference(endpoint_name: str, model_name: str, messages: List[Dict[str, Any]], params: Dict[str, Any],
               stream=False):
     """
-    모델 이름과 엔드포인트 이름이 지정된 메시지에 대해 추론을 수행합니다.
-    
+    根据给定的模型名称和端点名称，对消息进行推理。
+
     参数:
     endpoint_name (str): 模型服务的端点名称。
     model_name (str): 模型的名称。
@@ -230,7 +218,7 @@ def inference(endpoint_name: str, model_name: str, messages: List[Dict[str, Any]
             ]
     params (Dict[str,Any]): 传递给预测器的额外参数。
     stream (bool): 指定是否使用流式推理，默认为False。
-    
+
     返回:
     如果stream为False，返回推理的结果列表。
     如果stream为True，返回处理流式推理输出的函数。

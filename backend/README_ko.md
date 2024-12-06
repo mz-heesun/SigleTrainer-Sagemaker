@@ -64,7 +64,7 @@ bash build_and_push.sh
 ```shell
 python server.py --host 0.0.0.0 --port 8000
 ```
-
+배치 실행
 ```shell
 python3 processing_engine/main.py
 ```

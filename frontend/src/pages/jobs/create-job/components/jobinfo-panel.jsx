@@ -167,7 +167,8 @@ function AdvancedConfigs({onChange, readOnly, data, setData}) {
 function DeepSpeedConfigs({onChange, readOnly, data, setData}) {
     return (
         <SpaceBetween size="l">
-            <ExpandableSection headerText="DeepSpeed configurations (Applicable for Multi-GPU/Nodes)" variant="footer"
+            <ExpandableSection headerText={`DeepSpeed ${t('configurations (Applicable for Multi-GPU/Nodes)')}`}
+                               variant="footer"
                                expanded>
                 <Grid
                     gridDefinition={[{colspan: {default: 6, xxs: 4}}, {colspan: {default: 6, xxs: 4}}]}
