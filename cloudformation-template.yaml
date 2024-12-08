@@ -35,9 +35,9 @@ Parameters:
 Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
-    CreationPolicy:
-      ResourceSignal:
-        Timeout: PT30M
+#    CreationPolicy:
+#      ResourceSignal:
+#        Timeout: PT30M
     Properties:
       Tags:
         - Key: Name
@@ -56,140 +56,152 @@ Resources:
         Fn::Base64:
           !Sub
           - |
-            #!/bin/bash
-            # 로그 파일 설정
-            LOG_FILE="/var/log/user-data.log"
-            
-            # 기능: 기록 로그
-            log() {
-              echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
-            }
-            
-            log "Starting UserData script execution"
-            
-            # 기본 소프트웨어 업데이트 및 설치
-            log "Updating apt and installing git"
-            sudo apt update && sudo apt install -y git || { log "Failed to update apt or install git"; exit 1; }
-            
-            # AWS CLI 확인 및 설치
-            if ! command -v aws &> /dev/null; then
-              log "Installing AWS CLI"
-              sudo apt update && sudo apt install -y awscli || { log "Failed to install AWS CLI"; exit 1; }
-            else
-              log "AWS CLI already installed"
-            fi
-            
-            # Node.js 설치
-            log "Installing Node.js"
-            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
-            sudo apt install -y nodejs || { log "Failed to install Node.js"; exit 1; }
-            
-            log "Installing yarn"
-            sudo npm install --global yarn || { log "Failed to install yarn"; exit 1; }
-            
-            # 저장소 복제
-            log "Cloning repository"
-            sudo su ubuntu
-            cd /home/ubuntu/
-            git clone --recurse-submodule https://github.com/mz-heesun/SigleTrainer-Sagemaker.git || { log "Failed to clone repository"; exit 1; }
-            cd /home/ubuntu/SigleTrainer-Sagemaker/frontend
-            yarn install || { log "Failed to run yarn install"; exit 1; }
-            
-            # pm2 설치
-            log "Installing pm2"
-            sudo yarn global add pm2 || { log "Failed to install pm2"; exit 1; }
-            
-            # 인스턴스가 완전히 시작될 때까지 기다립니다.
-            log "Waiting for instance to fully start"
-            sleep 30
-            
-            # 인스턴스 메타데이터 가져오기
-            log "Retrieving instance metadata"
-            TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-            EC2_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/public-ipv4)
-            REGION=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/region)
-            
-            log "Got IP: $EC2_IP and Region: $REGION"
-            
-            # 무작위 키 생성
-            RANDOM_KEY=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-            
-            #환경변수 파일 쓰기
-            log "Writing environment variables"
-            echo "REACT_APP_API_ENDPOINT=http://$EC2_IP:8000/v1" > /home/ubuntu/SigleTrainer-Sagemaker/frontend/.env
-            echo "REACT_APP_API_KEY=$RANDOM_KEY" >> /home/ubuntu/SigleTrainer-Sagemaker/frontend/.env
-            echo "REACT_APP_CALCULATOR=https://aws-gpu-memory-caculator.streamlit.app/" >> /home/ubuntu/SigleTrainer-Sagemaker/frontend/.env
-            
-            #백엔드 환경 변수 쓰기
-            log "Writing backend environment variables"
-            cat << EOF > /home/ubuntu/SigleTrainer-Sagemaker/backend/.env
-            AK=
-            SK=
-            role=${SageMakerRoleArn}
-            region=$REGION
-            db_host=127.0.0.1
-            db_name=llm
-            db_user=llmdata
-            db_password=llmdata
-            api_keys=$RANDOM_KEY
-            HUGGING_FACE_HUB_TOKEN=${HuggingFaceHubToken}
-            WANDB_API_KEY=${WandbApiKey}
-            WANDB_BASE_URL=${WandbBaseUrl}
-            MAX_MODEL_LEN=4096
-            EOF
-            
-            # 권한 설정
-            log "Setting proper permissions"
-            sudo chown -R ubuntu:ubuntu /home/ubuntu/
-            
-            # 임의의 비밀번호를 생성하고 저장합니다.
-            RANDOM_PASSWORD=$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1) 
-            aws ssm put-parameter --name "/${AWS::StackName}/RandomPassword" --value "$RANDOM_PASSWORD" --type "SecureString" --overwrite --region ${AWS::Region} || { log "Failed to store random password in SSM"; exit 1; }
-            
-            #설정 스크립트 실행
-            log "Running setup script"
-            cd /home/ubuntu/SigleTrainer-Sagemaker/backend
-            sudo -u ubuntu bash 01.setup.sh || { log "Failed to run setup script"; exit 1; }
-            sleep 30
-            
-            #데이터베이스에 사용자 추가
-            log "Adding user to database"
-            source ../miniconda3/bin/activate py311
-            conda activate py311
-            python3 users/add_user.py demo_user $RANDOM_PASSWORD default || { log "Failed to add user to database"; exit 1; }
-            
-            # INFERENCE 이미지 빌드
-            log "Building and pushing image"
-            cd /home/ubuntu/SigleTrainer-Sagemaker/backend/byoc
-            sudo -u ubuntu bash build_and_push.sh || { log "Failed to build and push image"; exit 1; }
-            sleep 5
-            
-            # 더미 tar.gz 업로드
-            log "Uploading dummy tar.gz"
-            sudo -u ubuntu ../../miniconda3/envs/py311/bin/python startup.py || { log "Failed to upload dummy tar.gz"; exit 1; }
-            
-            # 백엔드 시작
-            log "Starting backend"
-            cd /home/ubuntu/SigleTrainer-Sagemaker/backend/
-            sudo -u ubuntu bash 02.start_backend.sh || { log "Failed to start backend"; exit 1; }
-            sleep 15
-            
-            # 프런트 엔드를 시작합니다
-            log "Starting frontend"
-            cd /home/ubuntu/SigleTrainer-Sagemaker/frontend
-            sudo -u ubuntu pm2 start pm2run.config.js || { log "Failed to start frontend"; exit 1; }
-            
-            # cfn-시그널 설치
-            log "Installing cfn-signal"
-            sudo pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz || { log "Failed to install cfn-signal"; exit 1; }
-            
-            #성공 신호 보내기
-            log "Sending success signal to CloudFormation"
-            /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region} || { log "Failed to send signal to CloudFormation"; exit 1; }
-            
-            echo "RandomPassword=$RANDOM_PASSWORD" >> /etc/environment
-            
-            log "UserData script execution completed successfully"
+#            #!/bin/bash
+#            # 로그 파일 설정
+#            LOG_FILE="/var/log/user-data.log"
+#
+#            # cfn-시그널 설치
+#            log "Installing cfn-signal"
+#            sudo pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz || { log "Failed to install cfn-signal"; exit 1; }
+#
+#            # 성공 신호 보내기
+#            log "Sending success signal to CloudFormation"
+#            /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region} || { log "Failed to send signal to CloudFormation"; exit 1; }
+#
+#            echo "RandomPassword=$RANDOM_PASSWORD" >> /etc/environment
+#
+#            log "UserData script execution completed successfully"
+
+#            # 기능: 기록 로그
+#            log() {
+#              echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
+#            }
+#
+#            log "Starting UserData script execution"
+#
+#            # 기본 소프트웨어 업데이트 및 설치
+#            log "Updating apt and installing git"
+#            sudo apt update && sudo apt install -y git || { log "Failed to update apt or install git"; exit 1; }
+#
+#            # AWS CLI 확인 및 설치
+#            if ! command -v aws &> /dev/null; then
+#              log "Installing AWS CLI"
+#              sudo apt update && sudo apt install -y awscli || { log "Failed to install AWS CLI"; exit 1; }
+#            else
+#              log "AWS CLI already installed"
+#            fi
+#
+#            # Node.js 설치
+#            log "Installing Node.js"
+#            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash - && \
+#            sudo apt install -y nodejs || { log "Failed to install Node.js"; exit 1; }
+#
+#            log "Installing yarn"
+#            sudo npm install --global yarn || { log "Failed to install yarn"; exit 1; }
+#
+#            # 저장소 복제
+#            log "Cloning repository"
+#            sudo su ubuntu
+#            cd /home/ubuntu/
+#            git clone --recurse-submodule https://github.com/mz-heesun/SigleTrainer-Sagemaker.git || { log "Failed to clone repository"; exit 1; }
+#            cd /home/ubuntu/SigleTrainer-Sagemaker/frontend
+#            yarn install || { log "Failed to run yarn install"; exit 1; }
+#
+#            # pm2 설치
+#            log "Installing pm2"
+#            sudo yarn global add pm2 || { log "Failed to install pm2"; exit 1; }
+#
+#            # 인스턴스가 완전히 시작될 때까지 기다립니다.
+#            log "Waiting for instance to fully start"
+#            sleep 30
+#
+#            # 인스턴스 메타데이터 가져오기
+#            log "Retrieving instance metadata"
+#            TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+#            EC2_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/public-ipv4)
+#            REGION=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/region)
+#
+#            log "Got IP: $EC2_IP and Region: $REGION"
+#
+#            # 무작위 키 생성
+#            RANDOM_KEY=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+#
+#            #환경변수 파일 쓰기
+#            log "Writing environment variables"
+#            echo "REACT_APP_API_ENDPOINT=http://$EC2_IP:8000/v1" > /home/ubuntu/SigleTrainer-Sagemaker/frontend/.env
+#            echo "REACT_APP_API_KEY=$RANDOM_KEY" >> /home/ubuntu/SigleTrainer-Sagemaker/frontend/.env
+#            echo "REACT_APP_CALCULATOR=https://aws-gpu-memory-caculator.streamlit.app/" >> /home/ubuntu/SigleTrainer-Sagemaker/frontend/.env
+#
+#            #백엔드 환경 변수 쓰기
+#            log "Writing backend environment variables"
+#            cat << EOF > /home/ubuntu/SigleTrainer-Sagemaker/backend/.env
+#            AK=
+#            SK=
+#            role=${SageMakerRoleArn}
+#            region=$REGION
+#            db_host=127.0.0.1
+#            db_name=llm
+#            db_user=llmdata
+#            db_password=llmdata
+#            api_keys=$RANDOM_KEY
+#            HUGGING_FACE_HUB_TOKEN=${HuggingFaceHubToken}
+#            WANDB_API_KEY=${WandbApiKey}
+#            WANDB_BASE_URL=${WandbBaseUrl}
+#            MAX_MODEL_LEN=4096
+#            EOF
+#
+#            # 권한 설정
+#            log "Setting proper permissions"
+#            sudo chown -R ubuntu:ubuntu /home/ubuntu/
+#
+#            # 임의의 비밀번호를 생성하고 저장합니다.
+#            RANDOM_PASSWORD=$(openssl rand -base64 12 | tr -dc 'a-zA-Z0-9' | fold -w 8 | head -n 1)
+#            aws ssm put-parameter --name "/${AWS::StackName}/RandomPassword" --value "$RANDOM_PASSWORD" --type "SecureString" --overwrite --region ${AWS::Region} || { log "Failed to store random password in SSM"; exit 1; }
+#
+#            #설정 스크립트 실행
+#            log "Running setup script"
+#            cd /home/ubuntu/SigleTrainer-Sagemaker/backend
+#            sudo -u ubuntu bash 01.setup.sh || { log "Failed to run setup script"; exit 1; }
+#            sleep 30
+#
+#            #데이터베이스에 사용자 추가
+#            log "Adding user to database"
+#            source ../miniconda3/bin/activate py311
+#            conda activate py311
+#            python3 users/add_user.py demo_user $RANDOM_PASSWORD default || { log "Failed to add user to database"; exit 1; }
+#
+#            # INFERENCE 이미지 빌드
+#            log "Building and pushing image"
+#            cd /home/ubuntu/SigleTrainer-Sagemaker/backend/byoc
+#            sudo -u ubuntu bash build_and_push.sh || { log "Failed to build and push image"; exit 1; }
+#            sleep 5
+#
+#            # 더미 tar.gz 업로드
+#            log "Uploading dummy tar.gz"
+#            sudo -u ubuntu ../../miniconda3/envs/py311/bin/python startup.py || { log "Failed to upload dummy tar.gz"; exit 1; }
+#
+#            # 백엔드 시작
+#            log "Starting backend"
+#            cd /home/ubuntu/SigleTrainer-Sagemaker/backend/
+#            sudo -u ubuntu bash 02.start_backend.sh || { log "Failed to start backend"; exit 1; }
+#            sleep 15
+#
+#            # 프런트 엔드를 시작합니다
+#            log "Starting frontend"
+#            cd /home/ubuntu/SigleTrainer-Sagemaker/frontend
+#            sudo -u ubuntu pm2 start pm2run.config.js || { log "Failed to start frontend"; exit 1; }
+#
+#            # cfn-시그널 설치
+#            log "Installing cfn-signal"
+#            sudo pip install https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz || { log "Failed to install cfn-signal"; exit 1; }
+#
+#            #성공 신호 보내기
+#            log "Sending success signal to CloudFormation"
+#            /usr/local/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region} || { log "Failed to send signal to CloudFormation"; exit 1; }
+#
+#            echo "RandomPassword=$RANDOM_PASSWORD" >> /etc/environment
+#
+#            log "UserData script execution completed successfully"
           - SageMakerRoleArn: !GetAtt SageMakerExecutionRole.Arn
             HuggingFaceHubToken: !Ref HuggingFaceHubToken
             WandbApiKey: !Ref WandbApiKey
@@ -254,7 +266,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:GetObject
-                Resource: !Sub '*'
+                Resource: '*'
 
 
   EC2InstanceProfile:
