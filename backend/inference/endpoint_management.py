@@ -155,40 +155,40 @@ def deploy_endpoint_byoc(job_id: str, engine: str, instance_type: str, quantize:
                          model_name: str, cust_repo_type: str, cust_repo_addr: str, extra_params: Dict[str, Any]) -> \
 Dict[bool, str]:
     repo_type = DownloadSource.MODELSCOPE if DEFAULT_REGION.startswith('cn') else DownloadSource.DEFAULT
-    # 统一处理成repo/modelname格式
+    # repo/modelname 형식으로 처리 통합
     model_name = get_model_path_by_name(model_name, repo_type) if model_name and len(
         model_name.split('/')) < 2 else model_name
     model_path = ''
-    # 如果是部署微调后的模型
+    # 미세 조정된 모델을 배포하는 경우
     if not job_id == 'N/A(Not finetuned)':
         jobinfo = sync_get_job_by_id(job_id)
         if not jobinfo.job_status == JobStatus.SUCCESS:
             return CommonResponse(response_id=job_id, response={"error": "job is not ready to deploy"})
-        # 如果是lora模型，则使用merge之后的路径
+        # 로라 모델인 경우 병합 후 경로를 사용하세요.
         if jobinfo.job_payload['finetuning_method'] == 'lora':
             model_path = jobinfo.output_s3_path + 'finetuned_model_merged/'
         else:
             model_path = jobinfo.output_s3_path + 'finetuned_model/'
-    # 如果是使用自定义模型
+    # 사용자 정의 모델을 사용하는 경우
     elif not cust_repo_addr == '' and model_name == '':
         model_name = cust_repo_addr
-        # 注册到supported_model中
+        # support_model에 등록하세요
         register_cust_model(cust_repo_type=repo_type, cust_repo_addr=cust_repo_addr)
-        # 仅仅针对中国区需要从模型中心下载上传到s3，在deploy endpint，所以改成后台执行。
+        # 중국의 경우에만 모델센터에서 Deploy endpint로 s3로 다운로드해서 업로드해야 하므로 백그라운드 실행으로 변경됩니다.
         if repo_type == DownloadSource.MODELSCOPE:
             deploy_endpoint_background(job_id=job_id, engine=engine, instance_type=instance_type, quantize=quantize,
                                        enable_lora=enable_lora, model_name=model_name, cust_repo_type=cust_repo_type,
                                        cust_repo_addr=cust_repo_addr, extra_params=extra_params)
             return True, "Creating endpoint in background"
-    # 如果是使用原始模型
+    # 원래 모델을 사용하는 경우
     elif model_name and job_id == 'N/A(Not finetuned)':
-        # 仅仅针对中国区需要从模型中心下载上传到s3，在deploy endpint，所以改成后台执行。
+        # 중국의 경우에만 모델센터에서 Deploy endpint로 s3로 다운로드해서 업로드해야 하므로 백그라운드 실행으로 변경됩니다.
         if repo_type == DownloadSource.MODELSCOPE:
             deploy_endpoint_background(job_id=job_id, engine=engine, instance_type=instance_type, quantize=quantize,
                                        enable_lora=enable_lora, model_name=model_name, cust_repo_type=cust_repo_type,
                                        cust_repo_addr=cust_repo_addr, extra_params=extra_params)
             return True, "Creating endpoint in background"
-    # 如果是直接从s3 path加载模型
+    # s3 경로에서 직접 모델을 로드하는 경우
     elif extra_params.get("s3_model_path"):
         model_path = extra_params.get("s3_model_path")
         model_name = 'custom/custom_model_in_s3' if not model_name else model_name
@@ -224,7 +224,7 @@ Dict[bool, str]:
     endpoint_name = sagemaker.utils.name_from_base(pure_model_name).replace('.', '-').replace('_', '-')
     instance_count = int(extra_params.get("instance_count", 1))
 
-    # Create the SageMaker Model object. In this example we let LMI configure the deployment settings based on the model architecture  
+    # SageMaker 모델 객체를 생성합니다. 이 예에서는 LMI가 모델 아키텍처를 기반으로 배포 설정을 구성하도록 합니다.
     model = Model(
         image_uri=lmi_image_uri,
         role=role,

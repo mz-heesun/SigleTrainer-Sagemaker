@@ -53,6 +53,8 @@ class DatabaseWrapper(BaseModel):
                     )
                     connection.commit()
         except Exception as e:
+            import traceback
+            traceback.print_exc()
             print(f"Error saving job: {e}")
             ret = False
         return ret

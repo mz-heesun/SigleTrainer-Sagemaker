@@ -35,9 +35,9 @@ Parameters:
 Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
-#    CreationPolicy:
-#      ResourceSignal:
-#        Timeout: PT30M
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT30M
     Properties:
       Tags:
         - Key: Name
