@@ -50,5 +50,9 @@ docker tag ${inference_image}:${VLLM_VERSION} ${inference_fullname}
 
 docker push ${inference_fullname}
 # 删除 .env 文件中的 vllm_image= 这一行
-sed -i '' '/^vllm_image=/d' ../.env
+# Linux
+sed -i '/^vllm_image=/d' ../.env
+
+# Mac
+# sed -i '' '/^vllm_image=/d' ../.env
 echo "vllm_image=${inference_fullname}" >> ../.env
