@@ -10,7 +10,8 @@ set -e
 # TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 
 # Get the current region and write it to the backend .env file
-region=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/region)
+#region=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/region)
+region=$(aws configure get region)
 suffix="com"
 
 if [[ "$region" == cn*  ]]; then
@@ -49,9 +50,7 @@ docker tag ${inference_image}:${VLLM_VERSION} ${inference_fullname}
 
 docker push ${inference_fullname}
 # 删除 .env 文件中的 vllm_image= 这一行
-# Linux
-sed -i '/^vllm_image=/d' ../.env
 
 # Mac
-# sed -i '' '/^vllm_image=/d' ../.env
+sed -i '' '/^vllm_image=/d' ../.env
 echo "vllm_image=${inference_fullname}" >> ../.env
