@@ -283,6 +283,9 @@ class TrainingJobExcutor(BaseModel):
             environment["WANDB_DISABLED"] = "true"
         entry_point = 'entry_single_lora.py' if instance_num == 1 else 'entry-multi-nodes.py'
         self.output_s3_path = output_s3_path
+
+        print(f"Create Traing Env: {environment}")
+
         self.estimator = PyTorch(entry_point=entry_point,
                                  source_dir='./LLaMA-Factory/',
                                  role=role,

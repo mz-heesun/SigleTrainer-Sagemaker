@@ -159,9 +159,11 @@ Dict[bool, str]:
     model_name = get_model_path_by_name(model_name, repo_type) if model_name and len(
         model_name.split('/')) < 2 else model_name
     model_path = ''
+    print('deploy_endpoint_byoc -> job_id:{}', job_id)
     # 미세 조정된 모델을 배포하는 경우
     if not job_id == 'N/A(Not finetuned)':
         jobinfo = sync_get_job_by_id(job_id)
+        print('deploy_endpoint_byoc -> jobinfo:{}', jobinfo)
         if not jobinfo.job_status == JobStatus.SUCCESS:
             return CommonResponse(response_id=job_id, response={"error": "job is not ready to deploy"})
         # 로라 모델인 경우 병합 후 경로를 사용하세요.

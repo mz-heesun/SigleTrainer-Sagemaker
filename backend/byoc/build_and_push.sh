@@ -7,7 +7,7 @@ set -e
 
 # The argument to this script is the region name. 
 # 尝试使用 IMDSv2 获取 token
-# TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+ TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 
 # Get the current region and write it to the backend .env file
 region=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/region)
@@ -20,7 +20,7 @@ fi
 # Get the account number associated with the current IAM credentials
 account=$(aws sts  get-caller-identity --query Account --output text)
 
-VLLM_VERSION=v0.6.2
+VLLM_VERSION=v0.6.4
 inference_image=sagemaker_endpoint/vllm
 inference_fullname=${account}.dkr.ecr.${region}.amazonaws.${suffix}/${inference_image}:${VLLM_VERSION}
 
@@ -49,9 +49,5 @@ docker tag ${inference_image}:${VLLM_VERSION} ${inference_fullname}
 
 docker push ${inference_fullname}
 # 删除 .env 文件中的 vllm_image= 这一行
-# Linux
-sed -i '/^vllm_image=/d' ../.env
-
-# Mac
-# sed -i '' '/^vllm_image=/d' ../.env
+sed -i '/^vllm_image=/d' /home/ubuntu/llm_model_hub/backend/.env
 echo "vllm_image=${inference_fullname}" >> ../.env
