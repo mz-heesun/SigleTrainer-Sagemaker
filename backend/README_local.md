@@ -58,7 +58,7 @@ pip install -r requirements.txt
 ```
 
 ```shell
-bash build_and_push.sh 
+bash build_and_push_mac_local.sh 
 ```
 백엔드 API 서버 실행
 ```shell
