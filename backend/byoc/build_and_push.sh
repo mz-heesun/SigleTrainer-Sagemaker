@@ -10,8 +10,8 @@ set -e
 # TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
 
 # Get the current region and write it to the backend .env file
-#region=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/region)
-region=$(aws configure get region)
+region=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/region)
+#region=$(aws configure get region)
 suffix="com"
 
 if [[ "$region" == cn*  ]]; then
@@ -21,7 +21,7 @@ fi
 # Get the account number associated with the current IAM credentials
 account=$(aws sts  get-caller-identity --query Account --output text)
 
-VLLM_VERSION=v0.6.3.post1
+VLLM_VERSION=v0.6.4
 inference_image=sagemaker_endpoint/vllm
 inference_fullname=${account}.dkr.ecr.${region}.amazonaws.${suffix}/${inference_image}:${VLLM_VERSION}
 
