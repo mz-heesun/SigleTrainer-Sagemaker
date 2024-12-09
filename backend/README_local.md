@@ -12,9 +12,9 @@ cp env.sample .env
 ```shell
 AK=
 SK=
-profile=pentacle
+profile=armiq-local
 region=us-east-2
-role=arn:aws:iam::529075693336:role/service-role/AmazonSageMakerServiceCatalogProductsUseRole
+role=arn:aws:iam::850205788233:role/LocalSageMakerRole
 db_host=127.0.0.1
 db_name=llm
 db_user=llmdata
@@ -47,18 +47,13 @@ cd scripts
 docker exec hub-mysql sh -c "mysql -u root -p1234560 -D llm  < /opt/data/mysql_setup.sql"
 ```
 
-각 모듈 실행스크립트 (경로 에러가 발생할 수 있음)
-```shell
-./0.setup-cn.sh
-```
-
 백엔드 전체 스크립트 실행
 ```shell
 pip install -r requirements.txt
 ```
 
 ```shell
-bash build_and_push_mac_local.sh 
+bash byoc/build_and_push_mac_local.sh 
 ```
 백엔드 API 서버 실행
 ```shell
