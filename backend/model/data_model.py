@@ -17,7 +17,6 @@ class JobType(Enum):
     kto = 'kto'
     rm = 'rm'
 
-
 class EndpointStatus(Enum):
     PRECREATING = "PRECREATING"
     CREATING = "CREATING"
@@ -26,7 +25,6 @@ class EndpointStatus(Enum):
     DELETING = "DELETING"
     TERMINATED = "TERMINATED"
     NOTFOUND = 'NOTFOUND'
-
 
 class JobStatus(Enum):
     PENDING = "PENDING"
@@ -38,23 +36,20 @@ class JobStatus(Enum):
     TERMINATED = "TERMINATED"
     TERMINATING = "TERMINATING"
     STOPPED = "STOPPED"
-
-
+    
 class FetchLogRequest(BaseModel):
     # job_run_name:str
-    job_id: str
-    next_token: Optional[str] = None
-
-
+    job_id:str
+    next_token:Optional[str] = None
+    
 class FetchLogResponse(BaseModel):
-    response_id: str
-    log_events: List[str]
-    next_backward_token: Optional[str] = None
-    next_forward_token: Optional[str] = None
-
-
+    response_id:str
+    log_events:List[str]
+    next_backward_token:Optional[str] = None
+    next_forward_token:Optional[str] = None
+    
 class CreateJobsRequest(BaseModel):
-    request_id: Optional[str] = None
+    request_id:Optional[str] = ''
     # job_type : Literal["sft","pt"] = Field(default="sft")
     job_type: JobType = Field(default=JobType.sft)
     job_name: str

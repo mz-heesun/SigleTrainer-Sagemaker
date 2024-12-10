@@ -1,9 +1,9 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'CloudFormation template for EC2 instance for ModelHubStack'
 
-Metadata:
-  AWS::CloudFormation::Interface:
-    StackName:
+Metadata: 
+  AWS::CloudFormation::Interface: 
+    StackName: 
       Default: "ModelHubStack"
 
 Parameters:
@@ -37,14 +37,14 @@ Resources:
     Type: AWS::EC2::Instance
     CreationPolicy:
       ResourceSignal:
-        Timeout: PT30M
+        Timeout: PT60M
     Properties:
       Tags:
         - Key: Name
           Value: ModelHubServer
       InstanceType: !Ref InstanceType
       ImageId: !Ref AMIId
-      SecurityGroupIds:
+      SecurityGroupIds: 
         - !Ref EC2SecurityGroup
       BlockDeviceMappings:
         - DeviceName: /dev/sda1
@@ -165,9 +165,16 @@ Resources:
             sudo -u ubuntu bash build_and_push.sh || { log "Failed to build and push image"; exit 1; }
             sleep 5
 
-            # 더미 tar.gz 업로드
-            log "Uploading dummy tar.gz"
-            sudo -u ubuntu ../../miniconda3/envs/py311/bin/python startup.py || { log "Failed to upload dummy tar.gz"; exit 1; }
+            # 构建llamafactory镜像
+            log "Building and pushing llamafactory image"
+            cd /home/ubuntu/SigleTrainer-Sagemaker/backend/docker
+            sudo -u ubuntu bash build_and_push.sh || { log "Failed to build and push llamafactory image"; exit 1; }
+            sleep 5
+
+              # 더미 tar.gz 업로드
+              log "Uploading dummy tar.gz"
+              cd /home/ubuntu/SigleTrainer-Sagemaker/backend/byoc
+              sudo -u ubuntu ../../miniconda3/envs/py311/bin/python startup.py || { log "Failed to upload dummy tar.gz"; exit 1; }
 
             # 백엔드 시작
             log "Starting backend"
@@ -301,7 +308,7 @@ Resources:
                   - ssmmessages:CreateDataChannel
                   - ssmmessages:OpenControlChannel
                   - ssmmessages:OpenDataChannel
-                Resource: !Sub 'arn:aws:sagemaker:${AWS::Region}:${AWS::AccountId}:*'
+                Resource: !Sub 'arn:aws:sagemaker:${AWS::Region}:${AWS::AccountId}:*'            
 
   SSMConsoleAccessRole:
     Type: AWS::IAM::Role
@@ -328,7 +335,7 @@ Resources:
                   - ssm:ResumeSession
                 Resource: '*'
 
-
+                
 Outputs:
   InstanceId:
     Description: ID of the EC2 instance

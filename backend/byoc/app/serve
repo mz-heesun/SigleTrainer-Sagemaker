@@ -23,6 +23,7 @@ fi
 # Find the first subdirectory in the base directory
 model_dir=$(find "$base_dir" -mindepth 1 -maxdepth 1 -type d -print -quit)
 
+
 # Check if a subdirectory was found
 if [ -z "$model_dir" ]; then
     echo "No subdirectory found"
@@ -79,6 +80,11 @@ else
             if [ "${ENFORCE_EAGER}" = "1" ]; then
                 command="$command --enforce-eager"
             fi
+
+            #if LIMIT_MM_PER_RPOMPT is not None then append to command
+            if [ -n "${LIMIT_MM_PER_PROMPT}" ]; then
+                command="$command --limit-mm-per-prompt $LIMIT_MM_PER_PROMPT"
+            fi
             
             eval $command
  
@@ -95,6 +101,11 @@ else
 
             if [ "${ENFORCE_EAGER}" = "1" ]; then
                 command="$command --enforce-eager"
+            fi
+
+            #if LIMIT_MM_PER_RPOMPT is not None then append to command
+            if [ -n "${LIMIT_MM_PER_PROMPT}" ]; then
+                command="$command --limit-mm-per-prompt $LIMIT_MM_PER_PROMPT"
             fi
             
             eval $command

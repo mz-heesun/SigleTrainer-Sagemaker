@@ -256,18 +256,19 @@ const SetExtraParamsInput = ({ data, setData, readOnly }: SelectQuantTypeProps) 
 
   const [value3, setValue3] = useState<boolean>(false);
   const [value4, setValue4] = useState<boolean>(false);
+  const [value5, setValue5] = useState<string>('');
+
 
   return (
     <SpaceBetween size='xs'>
       <FormField
         label="max-model-len"
-        description="模型上下文最大长度，不能超过kv cache的size,默认值4096"
+        description="模型上下文最大长度，不能超过kv cache的size,默认值12288"
         stretch={false}
       >
         <Input
           readOnly={readOnly}
           value={value1}
-          placeholder='4096'
           onChange={({ detail }) => {
             setValue1(detail.value);
             setData((pre: any) => ({ ...pre, extra_params:{...pre.extra_params,max_model_len: detail.value }  }))
@@ -319,6 +320,21 @@ const SetExtraParamsInput = ({ data, setData, readOnly }: SelectQuantTypeProps) 
         >
           {t("enable")}
         </Toggle>
+      </FormField>
+      <FormField
+        label="limit-mm-per-prompt"
+        description="一个请求最大支持图片或者video数量，默认是image=1，设置值格式为 image=N,video=M"
+        stretch={false}
+      >
+        <Input
+          readOnly={readOnly}
+          value={value5}
+          placeholder='image=5,video=2'
+          onChange={({ detail }) => {
+            setValue5(detail.value);
+            setData((pre: any) => ({ ...pre,  extra_params:{...pre.extra_params,limit_mm_per_prompt: detail.value } }))
+          }}
+        />
       </FormField>
       <FormField
         label="max-num-seqs"
@@ -406,8 +422,6 @@ export const DeployModelModal = ({
       then(res => {
         if (res.response.result) {
           setVisible(false);
-          // setDisplayNotify(true);
-          // setNotificationData({ status: 'success', content: `Create Endpoint Name:${res.response.endpoint_name}` });
           setLoading(false);
           setNotificationItems((item: any) => [
             ...item,
@@ -427,8 +441,6 @@ export const DeployModelModal = ({
           navigate('/endpoints');
         } else {
           setVisible(false);
-          // setDisplayNotify(true);
-          // setNotificationData({ status: 'error', content: `Create Endpoint failed:${res.response.endpoint_name}` });
           setLoading(false);
           setNotificationItems((item: any) => [
             ...item,
@@ -449,9 +461,7 @@ export const DeployModelModal = ({
 
       })
       .catch(err => {
-        // setDisplayNotify(true);
         setVisible(false);
-        // setNotificationData({ status: 'error', content: `Create Endpoint failed:${err}` });
         setNotificationItems((item: any) => [
           ...item,
           {
