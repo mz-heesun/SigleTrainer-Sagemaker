@@ -53,10 +53,13 @@ pip install -r requirements.txt
 ```
 
 ```shell
-bash byoc/build_and_push_mac_local.sh 
+cd byoc
+bash build_and_push_mac_local.sh 
 ```
 백엔드 API 서버 실행
 ```shell
+# pwd : backend
+# cd ..
 python server.py --host 0.0.0.0 --port 8000
 ```
 배치 실행

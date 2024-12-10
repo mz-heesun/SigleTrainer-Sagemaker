@@ -105,7 +105,7 @@ pm2 restart modelhub
 pm2 delete modelhub
 ```
 
-## 3.后端配置
+## 3.백엔드 구성
 [백엔드 구성](./backend/README.md)을 참조하세요.
 
 ## 4. 프런트엔드
