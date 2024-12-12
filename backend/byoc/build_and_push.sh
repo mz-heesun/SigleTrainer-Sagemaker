@@ -48,6 +48,7 @@ docker build  --build-arg VLLM_VERSION=${VLLM_VERSION} -t ${inference_image}:${V
 docker tag ${inference_image}:${VLLM_VERSION} ${inference_fullname}
 
 docker push ${inference_fullname}
-# 删除 .env 文件中的 vllm_image= 这一行
+
+# .env 파일에서 vllm_image= 행을 삭제합니다.
 sed -i '/^vllm_image=/d' ../.env
 echo "vllm_image=${inference_fullname}" >> ../.env
