@@ -34,7 +34,10 @@ WORKDIR /opt/ml/code/
 RUN pip config set global.index-url "$PIP_INDEX" && \
     pip config set global.extra-index-url "$PIP_INDEX" && \
     python -m pip install --upgrade pip && \
-    python -m pip install -r requirements.txt && pip install -e .
+    python -m pip install -r requirements.txt && pip install -e . && \
+    python -m pip install bitsandbytes==0.37.2 && \
+    python -m pip install optimum && \
+    python -m pip install auto_gptq
 
 
 # Instal extral dependencies

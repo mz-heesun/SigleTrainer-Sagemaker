@@ -1,10 +1,10 @@
 from sagemaker.estimator import Estimator
 from sagemaker.pytorch import PyTorch
 from datetime import datetime
-import yaml,json
+import yaml, json
 import shortuuid
 import logging
-from typing import Dict,List, Any
+from typing import Dict, List, Any
 from pydantic import BaseModel
 import sys
 
@@ -17,21 +17,22 @@ from utils.llamafactory.extras.constants import DEFAULT_TEMPLATE, DownloadSource
 import time
 import dotenv
 import os
-from utils.config import boto_sess,role,default_bucket,sagemaker_session, is_efa, \
-LORA_BASE_CONFIG,DEEPSPEED_BASE_CONFIG_MAP,FULL_BASE_CONFIG,DEFAULT_REGION,WANDB_API_KEY, WANDB_BASE_URL
+from utils.config import boto_sess, role, default_bucket, sagemaker_session, is_efa, \
+    LORA_BASE_CONFIG, DEEPSPEED_BASE_CONFIG_MAP, FULL_BASE_CONFIG, DEFAULT_REGION, WANDB_API_KEY, WANDB_BASE_URL
 
 dotenv.load_dotenv()
 
 logger = setup_logger('training_job.py', log_file='processing_engine.log', level=logging.INFO)
 
 
-def save_json_to_s3(s3_path,data):
+def save_json_to_s3(s3_path, data):
     s3_resource = boto_sess.resource('s3')
-    bucket_name,key = s3_path.replace('s3://','').split('/',1)
-    s3_resource.Object(bucket_name,key).put(Body=json.dumps(data))
+    bucket_name, key = s3_path.replace('s3://', '').split('/', 1)
+    s3_resource.Object(bucket_name, key).put(Body=json.dumps(data))
     return s3_path
 
-def get_all_log_streams(logs_client,log_group_name):
+
+def get_all_log_streams(logs_client, log_group_name):
     """
     获取指定日志组中的所有日志流
     
@@ -70,8 +71,8 @@ def get_all_log_streams(logs_client,log_group_name):
 def fetch_log(log_group_name: str = '/aws/sagemaker/TrainingJobs', log_stream_name: str = None, next_token: str = None):
     # 获取日志组中的所有日志流
     logs_client = boto_sess.client('logs')
-    
-    log_streams = get_all_log_streams(logs_client,log_group_name)
+
+    log_streams = get_all_log_streams(logs_client, log_group_name)
 
     results = []
     next_forward_token, next_backward_token = None, None
@@ -105,9 +106,9 @@ def fetch_log(log_group_name: str = '/aws/sagemaker/TrainingJobs', log_stream_na
                 message = event['message']
                 results.append(f'{timestamp}: {message}')
                 # print(f'{timestamp}: {message}')
-    return results,next_forward_token,next_backward_token
+    return results, next_forward_token, next_backward_token
 
-                
+
 class TrainingJobExcutor(BaseModel):
     estimator: Any = None
     job_run_name: str = None  # SageMaker Training job name
@@ -117,14 +118,13 @@ class TrainingJobExcutor(BaseModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        
     def create_training_args(self,
-                             stage:str,
-                             job_payload:Dict[str,Any],
-                             data_keys:List[str],
-                             model_id:str,
-                             base_config:str):
-        
+                             stage: str,
+                             job_payload: Dict[str, Any],
+                             data_keys: List[str],
+                             model_id: str,
+                             base_config: str):
+
         with open(base_config) as f:
             doc = yaml.safe_load(f)
         doc['output_dir'] = '/tmp/finetuned_model'
@@ -232,49 +232,45 @@ class TrainingJobExcutor(BaseModel):
         doc_merge['export_device'] = 'auto'
         doc_merge['export_legacy_format'] = False
 
-
         merge_args_path = f's3://{default_bucket}/llm_modelhub/args/merge_args_{timestamp}_{uuid}.json'
         save_json_to_s3(merge_args_path, doc_merge)
         logger.info(f'merge args:\n{doc}')
         logger.info(f'save merge args:\n{merge_args_path}')
 
-        return train_args_path,merge_args_path
+        return train_args_path, merge_args_path
 
-
-
-        
     def create_training(self,
-                        model_id:str,
-                        dataset_info_path:str,
-                        sg_config:str,
-                        use_spot:bool,
-                        max_spot_wait:int,
-                        max_job_run_hour:int,
-                        sg_lora_merge_config:str,
-                        instance_type:str ,
-                        instance_num:int,
-                        s3_checkpoint:str,
-                        s3_model_path:str,
-                        merge_lora:str = '1',
-                        training_input_path:str=None):
+                        model_id: str,
+                        dataset_info_path: str,
+                        sg_config: str,
+                        use_spot: bool,
+                        max_spot_wait: int,
+                        max_job_run_hour: int,
+                        sg_lora_merge_config: str,
+                        instance_type: str,
+                        instance_num: int,
+                        s3_checkpoint: str,
+                        s3_model_path: str,
+                        merge_lora: str = '1',
+                        training_input_path: str = None):
 
         base_model_name = model_id.split('/')[-1]
         base_job_name = base_model_name.replace('.', '-')
 
         output_s3_path = f's3://{default_bucket}/{base_job_name}/{self.job_id}/'
         environment = {
-            'NODE_NUMBER':str(instance_num),
-            "s3_data_paths":f"{training_input_path}",
-            "dataset_info_path":dataset_info_path,
-            "s3_checkpoint":s3_checkpoint,
-            "s3_model_path":s3_model_path,
+            'NODE_NUMBER': str(instance_num),
+            "s3_data_paths": f"{training_input_path}",
+            "dataset_info_path": dataset_info_path,
+            "s3_checkpoint": s3_checkpoint,
+            "s3_model_path": s3_model_path,
             "USE_EFA": "1" if is_efa(instance_type) else "0",
-            "HUGGING_FACE_HUB_TOKEN":os.environ.get('HUGGING_FACE_HUB_TOKEN'),
-            "merge_lora":merge_lora,
-            "merge_args_path":sg_lora_merge_config,
-            "train_args_path":sg_config,
-            'OUTPUT_MODEL_S3_PATH': output_s3_path, # destination
-            "PIP_INDEX":'https://mirrors.aliyun.com/pypi/simple' if DEFAULT_REGION.startswith('cn') else '',
+            "HUGGING_FACE_HUB_TOKEN": os.environ.get('HUGGING_FACE_HUB_TOKEN'),
+            "merge_lora": merge_lora,
+            "merge_args_path": sg_lora_merge_config,
+            "train_args_path": sg_config,
+            'OUTPUT_MODEL_S3_PATH': output_s3_path,  # destination
+            "PIP_INDEX": 'https://mirrors.aliyun.com/pypi/simple' if DEFAULT_REGION.startswith('cn') else '',
             "USE_MODELSCOPE_HUB": "1" if DEFAULT_REGION.startswith('cn') else '0'
 
         }
@@ -303,19 +299,18 @@ class TrainingJobExcutor(BaseModel):
         #                             # keep_alive_period_in_seconds=600,
         #                             max_run=3600*max_job_run_hour)
         self.estimator = Estimator(image_uri=os.environ['training_image'],
-                            role=role,
-                            use_spot_instances=use_spot,
-                            sagemaker_session=sagemaker_session,
-                            base_job_name=base_job_name,
-                            environment=environment,
-                            instance_count=instance_num,
-                            instance_type=instance_type,
-                            max_wait= 3600*max_spot_wait if use_spot else None,
-                            max_run=3600*max_job_run_hour,
-                            enable_remote_debug=True
-                            )
-        
-        
+                                   role=role,
+                                   use_spot_instances=use_spot,
+                                   sagemaker_session=sagemaker_session,
+                                   base_job_name=base_job_name,
+                                   environment=environment,
+                                   instance_count=instance_num,
+                                   instance_type=instance_type,
+                                   max_wait=3600 * max_spot_wait if use_spot else None,
+                                   max_run=3600 * max_job_run_hour,
+                                   enable_remote_debug=True
+                                   )
+
     def create(self):
         from training.jobs import sync_get_job_by_id
         jobinfo = sync_get_job_by_id(self.job_id)
@@ -346,23 +341,22 @@ class TrainingJobExcutor(BaseModel):
         dataset_info_path = f's3://{default_bucket}/llm_modelhub/dataset_info/dataset_info_{timestamp}_{uuid}.json'
         save_json_to_s3(dataset_info_path, dataset_info)
 
-        
-        #model_id参数
+        # model_id参数
         repo = DownloadSource.MODELSCOPE if DEFAULT_REGION.startswith('cn') else DownloadSource.DEFAULT
 
         # 判断是否使用repo/model格式
         model_id = get_model_path_by_name(job_payload['model_name'], repo) if len(
             job_payload['model_name'].split('/')) < 2 else job_payload['model_name']
         logger.info(f"model_id:{model_id},repo type:{repo}")
-        
-        if job_payload['stage'] in ['sft','dpo','kto','pt']:
-            sg_config,sg_lora_merge_config= self.create_training_args(
-                    stage=job_payload['stage'],
-                    data_keys=data_keys,
-                    job_payload=job_payload,
-                    model_id = model_id,
-                    base_config =LORA_BASE_CONFIG if job_payload['finetuning_method'] == 'lora' else FULL_BASE_CONFIG)
-            
+
+        if job_payload['stage'] in ['sft', 'dpo', 'kto', 'pt']:
+            sg_config, sg_lora_merge_config = self.create_training_args(
+                stage=job_payload['stage'],
+                data_keys=data_keys,
+                job_payload=job_payload,
+                model_id=model_id,
+                base_config=LORA_BASE_CONFIG if job_payload['finetuning_method'] == 'lora' else FULL_BASE_CONFIG)
+
             # Lora和没有设置量化时，merge lora
             merge_lora = '1' if job_payload['finetuning_method'] == 'lora' and job_payload[
                 'quantization_bit'] == 'none' else '0'
@@ -385,18 +379,18 @@ class TrainingJobExcutor(BaseModel):
             print(f"*********s3_model_path:{s3_model_path}")
             print('use_spot:', job_payload.get("use_spot", False))
             self.create_training(sg_config=sg_config,
-                                    dataset_info_path=dataset_info_path,
-                                    use_spot = job_payload.get("use_spot",False),
-                                    max_spot_wait = int(job_payload.get("max_spot_wait",72)),
-                                    max_job_run_hour = int(job_payload.get("max_job_run_hour",48)),
-                                    instance_num = int(job_payload['instance_num']),
-                                    model_id=model_id,
-                                    sg_lora_merge_config=sg_lora_merge_config,
-                                    training_input_path= s3_data_path,
-                                    merge_lora=merge_lora,
-                                    s3_checkpoint=s3_checkpoint,
-                                    s3_model_path=s3_model_path,
-                                    instance_type=job_payload['instance_type'])
+                                 dataset_info_path=dataset_info_path,
+                                 use_spot=job_payload.get("use_spot", False),
+                                 max_spot_wait=int(job_payload.get("max_spot_wait", 72)),
+                                 max_job_run_hour=int(job_payload.get("max_job_run_hour", 48)),
+                                 instance_num=int(job_payload['instance_num']),
+                                 model_id=model_id,
+                                 sg_lora_merge_config=sg_lora_merge_config,
+                                 training_input_path=s3_data_path,
+                                 merge_lora=merge_lora,
+                                 s3_checkpoint=s3_checkpoint,
+                                 s3_model_path=s3_model_path,
+                                 instance_type=job_payload['instance_type'])
 
             return True, 'create job success'
         else:

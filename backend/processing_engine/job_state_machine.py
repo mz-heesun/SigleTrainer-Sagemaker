@@ -2,11 +2,10 @@ import logging
 from datetime import datetime
 from typing import Dict, Any
 
-from pydantic import BaseModel
-
 from db_management.database import DatabaseWrapper
 from logger_config import setup_logger
 from model.data_model import JobStatus
+from pydantic import BaseModel
 from training.training_job import TrainingJobExcutor
 
 logger = logging.getLogger()

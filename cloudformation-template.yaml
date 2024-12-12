@@ -171,10 +171,10 @@ Resources:
             sudo -u ubuntu bash build_and_push.sh || { log "Failed to build and push llamafactory image"; exit 1; }
             sleep 5
 
-              # 더미 tar.gz 업로드
-              log "Uploading dummy tar.gz"
-              cd /home/ubuntu/SigleTrainer-Sagemaker/backend/byoc
-              sudo -u ubuntu ../../miniconda3/envs/py311/bin/python startup.py || { log "Failed to upload dummy tar.gz"; exit 1; }
+            # 더미 tar.gz 업로드
+            log "Uploading dummy tar.gz"
+            cd /home/ubuntu/SigleTrainer-Sagemaker/backend/byoc
+            sudo -u ubuntu ../../miniconda3/envs/py311/bin/python startup.py || { log "Failed to upload dummy tar.gz"; exit 1; }
 
             # 백엔드 시작
             log "Starting backend"

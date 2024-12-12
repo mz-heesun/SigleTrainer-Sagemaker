@@ -3,9 +3,18 @@
 - python 3.12
 - mysql8.0
 
-
+서브모듈 다운받기
 ```shell
+# cd ..
+git submodule update --init --recursive
+```
+
+환경변수 파일 정의
+```shell
+# cd backend
 cp env.sample .env
+# .env 파일안에 알맞는 환경변수를 입력해주어야함
+# prfile, role, hf_token, wandb_token etc..
 ```
 
 .env 파일에 필요한 부분 입력
@@ -52,16 +61,27 @@ docker exec hub-mysql sh -c "mysql -u root -p1234560 -D llm  < /opt/data/mysql_s
 pip install -r requirements.txt
 ```
 
+vllm 이미지 배포
 ```shell
 cd byoc
+chmod +x ./build_and_push_mac_local.sh
 bash build_and_push_mac_local.sh 
 ```
+
+training 이미지 배포
+```shell
+cd backend/docker/
+chmod +x ./build_and_push_mac_local.sh
+sh build_and_push_mac_local.sh
+```
+
 백엔드 API 서버 실행
 ```shell
 # pwd : backend
 # cd ..
 python server.py --host 0.0.0.0 --port 8000
 ```
+
 배치 실행
 ```shell
 python3 processing_engine/main.py

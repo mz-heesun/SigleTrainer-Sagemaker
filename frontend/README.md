@@ -2,7 +2,7 @@
 
 ### 준비
 ```shell
-cp .env.example .env
+cp env.sample .env
 ```
 
 .env 파일을 열어서 아래와 같이 수정
