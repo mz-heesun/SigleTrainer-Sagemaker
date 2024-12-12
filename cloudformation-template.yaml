@@ -165,7 +165,7 @@ Resources:
             sudo -u ubuntu bash build_and_push.sh || { log "Failed to build and push image"; exit 1; }
             sleep 5
 
-            # 构建llamafactory镜像
+            # 라마팩토리 이미지 빌드
             log "Building and pushing llamafactory image"
             cd /home/ubuntu/SigleTrainer-Sagemaker/backend/docker
             sudo -u ubuntu bash build_and_push.sh || { log "Failed to build and push llamafactory image"; exit 1; }
