@@ -10,6 +10,7 @@ cp env.sample .env
 REACT_APP_API_URL=http://localhost:8000/v1
 REACT_APP_API_URL=123456
 ```
+
 <b> backend 프로젝트의 api_keys값에 123456를 추가
 
 ### 실행 스크립트

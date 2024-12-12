@@ -7,7 +7,7 @@ import '../../styles/base.scss';
 import '../../styles/top-navigation.scss';
 import {useAuthUserInfo} from './use-auth';
 
-import logo from '../../resources/model-hub-high-resolution-logo-transparent.webp';
+import logo from '../../resources/finflow_white_logo.png';
 import { useTranslation, Trans } from 'react-i18next';
 import i18n from '../../common/i18n';
 import ModelSettings from './chat-settings';

@@ -21,7 +21,8 @@ import { useLocalStorage } from "../commons/use-local-storage";
 import StepLabel from '@mui/material/StepLabel';
 import Step from '@mui/material/Step';
 import Stepper from '@mui/material/Stepper';
-
+import finflowLogo from "../../resources/finflow_black_logo.png"
+import {Image} from "@mui/icons-material";
 
 
 function Copyright(props) {
@@ -41,7 +42,7 @@ const theme = createTheme({
   // palette: {
   //   primary: blue,
   //   secondary: deepPurple,
-  // },  
+  // },
 });
 
 const SignUpSteps = ({activeStep}) =>{
@@ -112,8 +113,8 @@ const SignUp = ({setSignType,username,setUsername,password,setPassword}) =>{
           console.log(data);
           setActiveStep(1);
           setLoading(false);
-      })  
-      .catch(error =>{ 
+      })
+      .catch(error =>{
         console.log(error);
         setErrorState(true);
         setErrMsg(error.response?.data);
@@ -132,8 +133,8 @@ const SignUp = ({setSignType,username,setUsername,password,setPassword}) =>{
           setActiveStep(2);
           setLoading(false);
           setTimeout(()=>setSignType('signin'),2000);
-      })  
-      .catch(error =>{ 
+      })
+      .catch(error =>{
         setErrorState(true);
         setErrMsg(error.response.data);
         setLoading(false);
@@ -162,7 +163,7 @@ const SignUp = ({setSignType,username,setUsername,password,setPassword}) =>{
           <Typography component="h1" variant="h5">
             Sign Up
           </Typography>
-         
+
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
           <FormControl sx={{width:360}}>
             <TextField
@@ -204,7 +205,7 @@ const SignUp = ({setSignType,username,setUsername,password,setPassword}) =>{
               onChange = {(event) => { setPassword(event.target.value);}}
               autoComplete="current-password"
             />
-            {activeStep? 
+            {activeStep?
               <TextField
               error = {errorstate}
               helperText ={errormsg}
@@ -217,7 +218,7 @@ const SignUp = ({setSignType,username,setUsername,password,setPassword}) =>{
               value ={confirmCode??''}
               onChange = {(event) => { setConfirmCode(event.target.value);}}
             />:<div/>
- 
+
             }
             <SignUpSteps activeStep={activeStep}/>
             {
@@ -244,7 +245,7 @@ const SignUp = ({setSignType,username,setUsername,password,setPassword}) =>{
               {"Confirm"}
             </LoadingButton>
             }
-            
+
             <Grid container>
               <Grid item xs>
                 <Link href="#" variant="body2">
@@ -317,8 +318,8 @@ const SignIn = ({setSession,setSignType,username,setUsername,password,setPasswor
           setErrMsg(data.error);
         }
         setLoading(false);
-    })  
-    .catch(error =>{ 
+    })
+    .catch(error =>{
       setErrorState(true);
       setErrMsg(error.response?.data);
       setLoading(false);
@@ -338,13 +339,17 @@ const SignIn = ({setSession,setSignType,username,setUsername,password,setPasswor
             alignItems: 'center',
           }}
         >
-          <Avatar sx={{ m: 1, bgcolor: 'warning.main' }}>
-            <LockOutlinedIcon />
-          </Avatar>
+          <Box
+              component="img"
+              src={finflowLogo}
+              alt="Finflow Logo"
+              sx={{ width: 600, objectFit: 'contain' }}
+            />
+
           <Typography component="h1" variant="h5">
             Sign in
           </Typography>
-         
+
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
           <FormControl sx={{width:360}}>
             <TextField
@@ -374,7 +379,7 @@ const SignIn = ({setSession,setSignType,username,setUsername,password,setPasswor
               autoComplete="current-password"
             />
             <FormControlLabel
-              control={<Checkbox 
+              control={<Checkbox
                 checked={checked}
                 onChange={(event) =>{
                   setChecked(event.target.checked);

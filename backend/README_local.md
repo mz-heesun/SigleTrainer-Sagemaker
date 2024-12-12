@@ -53,7 +53,7 @@ docker run -d \
 테이블 생성 
 ```shell
 cd scripts 
-docker exec hub-mysql sh -c "mysql -u root -p1234560 -D llm  < /opt/data/mysql_setup.sql"
+docker exec -it hub-mysql sh -c "mysql -u root -p1234560 -D llm"  < /opt/data/mysql_setup.sql"
 ```
 
 백엔드 전체 스크립트 실행
