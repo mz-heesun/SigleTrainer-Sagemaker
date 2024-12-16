@@ -65,7 +65,10 @@ Model Hub V2는 원스톱 모델 미세 조정, 배포 및 디버깅을 제공�
 ```bash
 git config --global url."https://gitclone.com/".insteadOf https://
 ```
-- --recurse-submodule을 사용하여 코드 다운로드
+
+- 如果是中国区需要手动下载代码并打包传到ec2中
+- 请先在能访问github的环境中执行以下命令下载代码，然后把代码打包成zip文件，上传到ec2服务器。
+- 使用--recurse-submodule下载代码  
 ```bash
 git clone --recurse-submodule https://github.com/aws-samples/llm_model_hub.git
 ````
@@ -74,6 +77,13 @@ git clone --recurse-submodule https://github.com/aws-samples/llm_model_hub.git
 배포 1. nodejs 설치 18
 ```bash
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+```
+2. 如果是中国区安装，则用设置中国代理
+```bash
+npm config set registry https://registry.npm.taobao.org
+```
+3. 安装yarn
+```bash
 sudo apt install -y nodejs
 sudo npm install --global yarn
 ```

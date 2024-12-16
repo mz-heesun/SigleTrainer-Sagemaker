@@ -36,15 +36,9 @@ else
     echo "File $LLAMA_REQ not found"
 fi
 
-# 处理 .gitmodules
-# gitmoddules_REQ="./.gitmodules"
-# if [ -f "$gitmoddules_REQ" ]; then
-#     sed -i "1i$MIRROR_LINE" "$gitmoddules_REQ"
-#     sed -i 's|https://github.com/|https://gitclone.com/github.com/|' "$gitmoddules_REQ"
-#     echo "Modified $gitmoddules_REQ"
-# else
-#     echo "File $gitmoddules_REQ not found"
-# fi
+##设置默认aws region
+# sudo apt install awscli
+# aws configure set region cn-northwest-1
 
 # 添加 Docker 配置
 DOCKER_CONFIG="/etc/docker/daemon.json"
