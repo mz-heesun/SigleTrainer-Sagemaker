@@ -8,6 +8,12 @@
 
 현재 디렉토리에서 명령어를 진행해야합니다.
 
+## 주의점 !!
+- terraform으로 생성되는 리소스는 모두 **ap-northeast-2 리전에 생성**됩니다.
+- sagemaker 리소스들은 모두 **us-east-2리전**에 생성됩니다.
+- backend 리소스를 실행할때 주의 해야합니다. 
+- aws configure 세팅할때도 주의 해야합니다. 
+
 ## 사전 준비
 
 - aws configure profile 세팅

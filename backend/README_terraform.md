@@ -1,15 +1,18 @@
-# 백엔드 개발 환경
+## 백엔드 개발 환경
 
+```shell
 - python 3.12
 - mysql8.0
+```
 
-서브모듈 다운받기
+
+### 서브모듈 다운받기
 ```shell
 # cd ..
 git submodule update --init --recursive
 ```
 
-환경변수 파일 정의
+### 환경변수 파일 정의
 ```shell
 # cd backend
 cp env.sample .env
@@ -17,7 +20,8 @@ cp env.sample .env
 # prfile, role, hf_token, wandb_token etc..
 ```
 
-.env 파일에 필요한 부분 입력
+###  .env 파일에 필요한 부분 입력
+
 ```shell
 AK=
 SK=
@@ -36,59 +40,57 @@ WANDB_BASE_URL=
 MAX_MODEL_LEN=4096
 ```
 
-도커 실행 스크립트 
+###  aws db에 쉘로 접속
+
 ```shell
-docker run -d \
-  --name hub-mysql \
-  -p 3307:3306 \
-  -e MYSQL_ROOT_PASSWORD=1234560 \
-  -e MYSQL_DATABASE=llm \
-  -e MYSQL_USER=llmdata \
-  -e MYSQL_PASSWORD=llmdata \
-  -v mysql-data:/var/lib/mysql \
-  -v $(pwd)/scripts:/opt/data \
-  --restart always \
-  mysql:8.0
+./db_script.sh
 ```
 
-테이블 생성 
+###  테이블 생성
+
 ```shell
 cd scripts 
-docker exec -it hub-mysql sh -c "mysql -u root -p1234560 -D llm"  < /opt/data/mysql_setup.sql"
 ```
 
-백엔드 전체 스크립트 실행
+해당 폴더내 스크립트를 클라이언트로 접속해 실행 한다.
+
+###  백엔드 전체 스크립트 실행
+
 ```shell
 pip install -r requirements.txt
 ```
 
-vllm 이미지 배포
+### vllm 이미지 배포
+
 ```shell
 cd byoc
 chmod +x ./build_and_push_mac_local.sh
 bash build_and_push_mac_local.sh 
 ```
 
-training 이미지 배포
+### training 이미지 배포
+
 ```shell
 cd backend/docker/
 chmod +x ./build_and_push_mac_local.sh
 sh build_and_push_mac_local.sh
 ```
 
-백엔드 API 서버 실행
+### 백엔드 API 서버 실행
+
 ```shell
 # pwd : backend
 # cd ..
 python server.py --host 0.0.0.0 --port 8000
 ```
 
-배치 실행
+### 배치 실행
+
 ```shell
 python3 processing_engine/main.py
 ```
 
-각 폴더별 설명
+###  각 폴더별 설명
 byoc - inference 배포 스크립트 \
 db-management - 로컬 데이테이스 \
 LLaMA-Factory - 모델 생성 및 관리 \

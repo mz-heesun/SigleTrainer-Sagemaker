@@ -1,7 +1,7 @@
 variable "region" {
   description = "AWS Region"
   type        = string
-  default     = "us-east-2"
+  default     = "ap-northeast-2"
 }
 
 variable "name_prefix" {

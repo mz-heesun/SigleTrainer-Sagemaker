@@ -1,5 +1,5 @@
 resource "aws_iam_role" "ssm_role" {
-  name = "ssm_role"
+  name = "${var.name_prefix}-SSM_ROLE"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -21,13 +21,28 @@ resource "aws_iam_role_policy_attachment" "ssm_attach" {
 }
 
 resource "aws_iam_instance_profile" "ssm_profile" {
-  name = "ssm_profile"
+  name = "${var.name_prefix}-SSM_PROFILE"
   role = aws_iam_role.ssm_role.name
+}
+
+data "aws_ami" "latest_amazon_linux" {
+  most_recent = true
+  owners = ["amazon"]
+
+  filter {
+    name = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+
+  filter {
+    name = "state"
+    values = ["available"]
+  }
 }
 
 
 resource "aws_instance" "bastion" {
-  ami = "ami-0b4624933067d393a"  # Amazon Linux 2 AMI
+  ami = data.aws_ami.latest_amazon_linux.id  # Amazon Linux 2 AMI
   instance_type     = "t2.nano"
   subnet_id         = var.public_subnet_id
   security_groups = [var.bastion_security_group_id]
@@ -36,7 +51,7 @@ resource "aws_instance" "bastion" {
   iam_instance_profile = aws_iam_instance_profile.ssm_profile.name
 
   tags = {
-    Name = "llama-factory-bastion-host"
+    Name = "${var.name_prefix}-BASTION-HOST"
   }
 }
 
