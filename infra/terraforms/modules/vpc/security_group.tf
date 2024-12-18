@@ -1,4 +1,4 @@
-resource "aws_security_group" "bastion_sg" {
+resource "aws_security_group" "bastion_security_group" {
   vpc_id = aws_vpc.main.id
 
   ingress {

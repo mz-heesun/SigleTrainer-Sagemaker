@@ -27,6 +27,6 @@ output "bastion_public_subnet_c_availability_zone" {
 }
 
 output "bastion_security_group_id" {
-  value = aws_security_group.bastion_sg.id
+  value = aws_security_group.bastion_security_group.id
 }
 
