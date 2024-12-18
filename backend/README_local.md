@@ -25,6 +25,7 @@ profile=armiq-local
 region=us-east-2
 role=arn:aws:iam::850205788233:role/LocalSageMakerRole
 db_host=127.0.0.1
+db_port=3307
 db_name=llm
 db_user=llmdata
 db_password=llmdata
@@ -35,12 +36,20 @@ WANDB_BASE_URL=
 MAX_MODEL_LEN=4096
 ```
 
+DB는 2가지 방법으로 실행 가능함.
+
+- aws db에 쉘로 접속 
+```shell
+./db_script.sh
+```
+
+- 로컬에 도커를 설치하여 접속
 
 도커 실행 스크립트 
 ```shell
 docker run -d \
   --name hub-mysql \
-  -p 3306:3306 \
+  -p 3307:3306 \
   -e MYSQL_ROOT_PASSWORD=1234560 \
   -e MYSQL_DATABASE=llm \
   -e MYSQL_USER=llmdata \
@@ -50,6 +59,7 @@ docker run -d \
   --restart always \
   mysql:8.0
 ```
+
 테이블 생성 
 ```shell
 cd scripts 

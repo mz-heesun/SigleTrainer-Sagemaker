@@ -18,7 +18,8 @@ import time
 import dotenv
 import os
 from utils.config import boto_sess, role, default_bucket, sagemaker_session, is_efa, \
-    LORA_BASE_CONFIG, DEEPSPEED_BASE_CONFIG_MAP, FULL_BASE_CONFIG, DEFAULT_REGION, WANDB_API_KEY, WANDB_BASE_URL
+    LORA_BASE_CONFIG, DEEPSPEED_BASE_CONFIG_MAP, FULL_BASE_CONFIG, DEFAULT_REGION, WANDB_API_KEY, WANDB_BASE_URL, \
+    WANDB_PROJECT
 
 dotenv.load_dotenv()
 
@@ -278,6 +279,8 @@ class TrainingJobExcutor(BaseModel):
             environment["WANDB_BASE_URL"] = WANDB_BASE_URL
         if WANDB_API_KEY:
             environment["WANDB_API_KEY"] = WANDB_API_KEY
+            if WANDB_PROJECT:
+                environment["WANDB_PROJECT"] = WANDB_PROJECT
         else:
             environment["WANDB_DISABLED"] = "true"
         # entry_point = 'entry_single_lora.py' if instance_num == 1 else 'entry-multi-nodes.py'
